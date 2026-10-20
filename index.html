@@ -124,6 +124,8 @@ input[type=range]{width:100%;accent-color:var(--yellow);height:26px;margin:0}
 .app .st.on{color:var(--ink)}
 .app[aria-pressed="true"]{border-color:var(--yellow);background:var(--yellow);color:var(--ink)}
 .base{font-size:14px;color:var(--muted);margin:0}
+.apps>.app:last-child:nth-child(odd){grid-column:1/-1}
+.card.any .card-head .lbl{color:var(--ok)}
 
 .tries{display:flex;flex-wrap:wrap;gap:8px}
 .try{font:600 14px var(--body);border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:999px;padding:8px 13px;cursor:pointer}
@@ -153,7 +155,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .mini{display:none}
   .badge{font-size:17px;top:14px}.clock{left:16px}.srcTag{right:16px}
   .nums b{font-size:24px}
-  .rules{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .rules{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -225,7 +227,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 
       <div id="cutBox" class="cut" hidden aria-live="assertive">
         <h2>Power cut</h2>
-        <p>Every room just went dark. Lights, phone chargers and laptops are off for everyone.</p>
+        <p>Every room just went dark. Lights, fans, laptops and phone chargers are off for everyone.</p>
         <div class="why" id="why"></div>
         <button id="resetBtn" type="button">Switch it off and restore power</button>
       </div>
@@ -250,34 +252,27 @@ button:disabled{opacity:.45;cursor:not-allowed}
         </div>
       </div>
 
+      <div class="card any">
+        <div class="card-head"><span class="lbl">Any time</span><span class="hint">OK 24 hours, on solar too</span></div>
+        <div class="apps" id="appsAny"></div>
+      </div>
+
       <div class="card">
-        <div class="card-head"><span class="lbl">Everyday</span><span class="hint">Solar OK until 5:00 PM</span></div>
-        <div class="apps" id="appsEveryday"></div>
+        <div class="card-head"><span class="lbl">Daytime only</span><span class="hint">Off after 5:00 PM</span></div>
+        <div class="apps" id="appsDay"></div>
       </div>
 
       <div class="card heavy">
         <div class="card-head"><span class="lbl">Heavy · generator only</span><span class="hint">One at a time</span></div>
         <div class="apps" id="appsHeavy"></div>
       </div>
-
-      <p class="base">Lights, phone chargers and laptops are always on for all residents.</p>
-
-      <div class="rules-wrap">
-        <p class="sec-lbl">Common mistakes · tap to see</p>
-        <div class="tries">
-          <button class="try" type="button" data-try="tea">Kettle on solar</button>
-          <button class="try" type="button" data-try="fridge">Fridge on after 5 PM</button>
-          <button class="try" type="button" data-try="two">Two heavy at once</button>
-          <button class="try" type="button" data-try="ac">Generator stops, AC still on</button>
-          <button class="try good" type="button" data-try="right">✓ The right way</button>
-        </div>
-      </div>
     </div>
   </div>
 
   <section class="rules-wrap">
-    <p class="sec-lbl">The three golden rules</p>
+    <p class="sec-lbl">The golden rules</p>
     <div class="rules">
+      <div class="rule"><div class="n">✓</div><div><b>Small appliances: any time</b><span>Lights, fans, laptops, phone chargers and the coffee kettle are fine 24 hours.</span></div></div>
       <div class="rule"><div class="n">1</div><div><b>Fridge &amp; washer: before 5:00 PM</b><span>Switch them off after 5:00 PM. Washer on cold water only.</span></div></div>
       <div class="rule"><div class="n">2</div><div><b>Heating only on the generator</b><span>Microwave, kettle, plate cooker and AC never on solar.</span></div></div>
       <div class="rule"><div class="n">3</div><div><b>One heavy appliance at a time</b><span>Fridge and washer can stay on, but never two heavy ones together.</span></div></div>
@@ -286,8 +281,13 @@ button:disabled{opacity:.45;cursor:not-allowed}
 </div>
 
 <script>
-const BASE = 300;
+const BASE = 0;
 const ICON = {
+  light:'<path d="M11 20a7 7 0 1 1 10 0c-1.2 1.2-2 2.3-2 4h-6c0-1.7-.8-2.8-2-4z"/><line x1="13" y1="27" x2="19" y2="27"/><line x1="14" y1="30" x2="18" y2="30"/>',
+  fan:'<circle cx="16" cy="13" r="2"/><path d="M16 11c-1-5 4-7 5-4s-3 4-5 4zM18 14c4 2 4 7 1 7s-3-5-1-7zM14 14c-4 1-8-2-5-4s5 2 5 4z"/><line x1="16" y1="15" x2="16" y2="27"/><line x1="10" y1="28" x2="22" y2="28"/>',
+  laptop:'<rect x="7" y="7" width="18" height="13" rx="1.5"/><path d="M3 24h26l-2 3H5z"/>',
+  phone:'<rect x="10" y="3" width="12" height="22" rx="2"/><line x1="14.5" y1="21" x2="17.5" y2="21"/><path d="M16 25v4"/>',
+  coffee:'<path d="M8 12h12v10a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M20 15h2a3 3 0 0 1 0 6h-2"/><path d="M12 4c-1 2 1 3 0 5M16 4c-1 2 1 3 0 5"/>',
   fridge:'<rect x="7" y="3" width="18" height="26" rx="2"/><line x1="7" y1="12" x2="25" y2="12"/><line x1="11" y1="7" x2="11" y2="9"/><line x1="11" y1="16" x2="11" y2="20"/>',
   washer:'<rect x="5" y="4" width="22" height="24" rx="2"/><circle cx="16" cy="17" r="6.5"/><line x1="9" y1="8" x2="13" y2="8"/>',
   kettle:'<path d="M9 11h13l2 16H7z"/><path d="M12 11V8h7v3"/><path d="M24 14c3 0 4 2 4 5s-2 4-4 4"/>',
@@ -296,18 +296,23 @@ const ICON = {
   ac:'<rect x="3" y="7" width="26" height="10" rx="3"/><line x1="7" y1="14" x2="25" y2="14"/><path d="M10 21c1 2-1 3 0 5M16 21c1 2-1 3 0 5M22 21c1 2-1 3 0 5"/>'
 };
 const APPS = [
-  {id:'fridge',name:'Fridge',w:200,heavy:false},
-  {id:'washer',name:'Washer',w:500,heavy:false},
-  {id:'kettle',name:'Kettle',w:2000,heavy:true},
-  {id:'microwave',name:'Microwave',w:1500,heavy:true},
-  {id:'plate',name:'Plate cooker',w:1500,heavy:true},
-  {id:'ac',name:'Air con',w:1500,heavy:true}
+  {id:'light',name:'Lights',w:80,group:'any'},
+  {id:'fan',name:'Fans',w:150,group:'any'},
+  {id:'laptop',name:'Laptops',w:120,group:'any'},
+  {id:'phone',name:'Phone chargers',w:40,group:'any'},
+  {id:'coffee',name:'Coffee kettle',w:600,group:'any'},
+  {id:'fridge',name:'Fridge',w:200,group:'day'},
+  {id:'washer',name:'Washer',w:500,group:'day'},
+  {id:'kettle',name:'Kettle',w:2000,heavy:true,group:'heavy'},
+  {id:'microwave',name:'Microwave',w:1500,heavy:true,group:'heavy'},
+  {id:'plate',name:'Plate cooker',w:1500,heavy:true,group:'heavy'},
+  {id:'ac',name:'Air con',w:1500,heavy:true,group:'heavy'}
 ];
-const S = {source:'solar', hour:12, on:{fridge:true}, tripped:false, culprits:[]};
+const S = {source:'solar', hour:12, on:{light:true,laptop:true,phone:true,fridge:true}, tripped:false, culprits:[]};
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString('en-US');
 const timeStr = h => { const hh=Math.floor(h), m=h%1?'30':'00'; return ((hh+11)%12+1)+':'+m+' '+(hh>=12?'PM':'AM'); };
-const capOf = st => st.source==='generator' ? 3000 : (st.hour<17 ? 1100 : 450);
+const capOf = st => st.source==='generator' ? 3800 : (st.hour<17 ? 1800 : 1100);
 const loadOf = st => BASE + APPS.filter(a=>st.on[a.id]).reduce((t,a)=>t+a.w,0);
 
 // Pure rules check: returns null if fine, or {short, why, culprits}
@@ -325,7 +330,7 @@ function evaluate(st, changed){
     if(st.hour>=17&&(st.on.fridge||st.on.washer)){
       const ids=['fridge','washer'].filter(k=>st.on[k]);
       const names=ids.map(k=>k==='fridge'?'fridge':'washing machine').join(' and ');
-      return {short:'Off after 5 PM', why:`<strong>It's after 5:00 PM.</strong> The building now runs on stored battery power (about ${fmt(C)} W). Leaving the ${names} on drains the batteries until everything shuts off.`, culprits:ids};
+      return {short:'Off after 5 PM', why:`<strong>It's after 5:00 PM.</strong> The building now runs on stored battery power. Leaving the ${names} on drains the batteries until everything shuts off.`, culprits:ids};
     }
   } else if(onHeavy.length>=2){
     const sum=onHeavy.reduce((t,a)=>t+a.w,0);
@@ -362,7 +367,7 @@ APPS.forEach(a=>{
   b.type='button'; b.className='app'; b.id='app-'+a.id; b.setAttribute('aria-pressed','false');
   b.innerHTML='<svg viewBox="0 0 32 32">'+ICON[a.id]+'</svg><span>'+a.name+'</span><span class="st" id="st-'+a.id+'"></span>';
   b.onclick=()=>{ if(S.tripped) return; S.on[a.id]=!S.on[a.id]; update(a.id); };
-  $(a.heavy?'appsHeavy':'appsEveryday').appendChild(b);
+  $({any:'appsAny',day:'appsDay',heavy:'appsHeavy'}[a.group]).appendChild(b);
 });
 
 const SKY=[[6,[201,138,90]],[8,[91,143,176]],[16,[91,143,176]],[17.5,[201,119,74]],[19,[21,27,46]],[22,[14,18,32]]];
@@ -424,9 +429,9 @@ function render(){
   let msg;
   if(gen) msg = onHeavy.length
     ? `<strong>OK.</strong> The ${onHeavy[0].name.toLowerCase()} is on. Don't start another heavy appliance until it's off.`
-    : `<strong>Generator running.</strong> Fridge and washer can stay on, plus one heavy appliance.`;
-  else if(S.hour>=17) msg = `<strong>Solar after 5:00 PM.</strong> Battery power only. Fridge and washer must be off. No heavy appliances.`;
-  else msg = `<strong>Solar, daytime.</strong> Fridge and washer are fine. No heavy appliances.`;
+    : `<strong>Generator running.</strong> Everything else can stay on, plus one heavy appliance.`;
+  else if(S.hour>=17) msg = `<strong>Solar after 5:00 PM.</strong> Battery power. Any-time appliances only. Fridge and washer off.`;
+  else msg = `<strong>Solar, daytime.</strong> Any-time and daytime appliances are fine. No heavy ones.`;
   $('status').innerHTML=msg;
 
   // Each button predicts what would happen if you switched it on now
@@ -461,25 +466,6 @@ $('srcSolar').onclick=()=>{ if(S.source!=='solar'){S.source='solar';update('sour
 $('srcGen').onclick=()=>{ if(S.source!=='generator'){S.source='generator';update('source');} };
 $('hour').oninput=e=>{S.hour=+e.target.value;update('hour');};
 
-const TRIES={
-  tea:{source:'solar',hour:10,on:{fridge:true},then:'kettle'},
-  fridge:{source:'solar',hour:16,on:{fridge:true},thenHour:19},
-  two:{source:'generator',hour:13,on:{fridge:true,kettle:true},then:'microwave'},
-  ac:{source:'generator',hour:14,on:{ac:true},thenSource:'solar'},
-  right:{source:'generator',hour:18,on:{fridge:true,washer:true},then:'kettle'}
-};
-document.querySelectorAll('.try').forEach(b=>b.onclick=()=>{
-  const t=TRIES[b.dataset.try];
-  if(S.tripped){S.culprits=[];restore();}
-  S.source=t.source; S.hour=t.hour; S.on={...t.on}; $('hour').value=t.hour;
-  render();
-  if(window.innerWidth<900) window.scrollTo({top:0,behavior:'smooth'});
-  setTimeout(()=>{
-    if(t.then){S.on[t.then]=true;update(t.then);}
-    if(t.thenHour){let h=t.hour;const iv=setInterval(()=>{h+=.5;S.hour=h;$('hour').value=h;update('hour');if(h>=t.thenHour||S.tripped)clearInterval(iv);},220);}
-    if(t.thenSource){S.source=t.thenSource;update('source');}
-  },1100);
-});
 
 render();
 </script>
